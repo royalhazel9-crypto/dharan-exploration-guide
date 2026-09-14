@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dharan Explorer — Your Ultimate Local Guide</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: #07100d;
+            color: #f5fff9;
+            overflow-x: hidden;
+        }
+
+        :root {
+            --green: #62e99a;
+            --green-dark: #163c2b;
+            --bg: #07100d;
+            --card: #0c1914;
+            --muted: #71847b;
+            --border: #20392e;
+        }
+
+        /* HEADER */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: rgba(7, 16, 13, 0.88);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+        }
+
+        .nav {
+            max-width: 1150px;
+            margin: auto;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .brand span {
+            color: var(--green);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: #819189;
+            text-decoration: none;
+            font-size: 12px;
+            transition: .3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        /* HERO */
+        .hero {
+            max-width: 1050px;
+            margin: auto;
+            text-align: center;
+            padding: 85px 20px 60px;
+        }
+
+        .location-badge {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            color: #80938a;
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 10vw, 90px);
+            line-height: .95;
+            letter-spacing: -5px;
+        }
+
+        .hero h1 span {
+            color: var(--green);
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: 25px auto;
+            color: var(--muted);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 22px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #07100d;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #102019;
+        }
+
+        /* QUICK NAV */
+        .quick-nav {
+            max-width: 1000px;
+            margin: auto;
+            padding: 0 20px 40px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .quick-card {
+            padding: 20px 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-decoration: none;
+            color: white;
+            text-align: center;
+            transition: .3s;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-4px);
+            border-color: #397355;
+        }
+
+        .quick-card div {
+            font-size: 25px;
+            margin-bottom: 10px;
+        }
+
+        .quick-card strong {
+            display: block;
+            font-size: 12px;
+        }
+
+        .quick-card small {
+            display: block;
+            color: #63766d;
+            margin-top: 5px;
+        }
+
+        /* SECTIONS */
+        .section {
+            max-width: 1100px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .heading {
+            margin-bottom: 25px;
+        }
+
+        .heading small {
+            color: var(--green);
+            letter-spacing: 3px;
+            font-size: 9px;
+        }
+
+        .heading h2 {
+            margin-top: 8px;
+            font-size: 34px;
+            letter-spacing: -2px;
+        }
+
+        .heading p {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* MAP */
+        #map {
+            height: 560px;
+            width: 100%;
+            border-radius: 25px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .leaflet-container {
+            background: #17251f;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: #0b1914;
+            color: white;
+            border: 1px solid #294b3c;
+        }
+
+        .leaflet-popup-tip {
+            background: #0b1914;
+        }
+
+        .popup-title {
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .popup-type {
+            color: var(--green);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .popup-text {
+            color: #81938b;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-top: 7px;
+        }
+
+        .map-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 7px 10px;
+            border-radius: 7px;
+            background: #62e99a;
+            color: #07100d;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* PLACES GRID */
+        .places {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .place {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            transition: .35s;
+        }
+
+        .place:hover {
+            transform: translateY(-5px);
+            border-color: #397355;
+        }
+
+        .place-icon {
+            font-size: 30px;
+            margin-bottom: 18px;
+        }
+
+        .place-type {
+            color: var(--green);
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        .place h3 {
+            margin-top: 8px;
+            font-size: 18px;
+        }
+
+        .place p {
+            color: #71847b;
+            font-size: 12px;
+            line-height: 1.7;
+            margin-top: 10px;
+        }
+
+        .place a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #a4ffca;
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        /* FOOD GRID & CLICKABLE CARDS */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .food {
+            padding: 25px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .food:hover {
+            border-color: var(--green);
+            transform: translateY(-4px);
+        }
+
+        .food h3 {
+            font-size: 19px;
+        }
+
+        .food p {
+            color: #71847b;
+            line-height: 1.7;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .food-tag {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 6px 9px;
+            border-radius: 6px;
+            background: #13261d;
+            color: #7ee9a6;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        /* FOOD MODAL POPUP */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 10000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            color: #fff;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--green);
+        }
+
+        .spot-item {
+            margin-top: 15px;
+            padding: 15px;
+            background: #07100d;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .spot-item h4 {
+            color: var(--green);
+            font-size: 16px;
+        }
+
+        .spot-item p {
+            font-size: 12px;
+            color: #81938b;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .spot-item a {
+            display: inline-block;
+            margin-top: 8px;
+            color: #a4ffca;
+            font-size: 11px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* BUSINESS GRID */
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .business {
+            padding: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+        }
+
+        .business h3 {
+            font-size: 15px;
+        }
+
+        .business p {
+            color: #667970;
+            font-size: 12px;
+            margin-top: 7px;
+            line-height: 1.6;
+        }
+
+        .business .hours {
+            color: var(--green);
+            font-size: 10px;
+            margin-top: 12px;
+        }
+
+        .business a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #a4ffca;
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        /* ITINERARIES */
+        .itinerary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .trip {
+            padding: 25px;
+            background: linear-gradient(145deg, #0d1c16, #09120f);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .trip-label {
+            color: var(--green);
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        .trip h3 {
+            margin-top: 10px;
+        }
+
+        .trip p {
+            color: #71847b;
+            font-size: 11px;
+            line-height: 1.7;
+            margin-top: 10px;
+        }
+
+        .trip ul {
+            margin-top: 15px;
+            padding-left: 17px;
+            color: #9aacA4;
+            font-size: 11px;
+            line-height: 2;
+        }
+
+        .trip a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #a4ffca;
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        /* GUIDE */
+        .guide {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .guide-card {
+            padding: 25px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .guide-card h3 {
+            margin-bottom: 12px;
+        }
+
+        .guide-card p {
+            color: #71847b;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .guide-card strong {
+            color: white;
+        }
+
+        /* FOOTER */
+        footer {
+            margin-top: 100px;
+            padding: 50px 20px;
+            text-align: center;
+            border-top: 1px solid #15251e;
+            color: #4e6259;
+            font-size: 10px;
+            line-height: 1.8;
+        }
+
+        footer strong {
+            color: var(--green);
+        }
+
+        /* MOBILE */
+        @media(max-width:700px) {
+            .nav-links { display: none; }
+            .quick-nav { grid-template-columns: repeat(2, 1fr); }
+            .places { grid-template-columns: 1fr; }
+            .food-grid { grid-template-columns: 1fr; }
+            .business-grid { grid-template-columns: 1fr; }
+            .itinerary { grid-template-columns: 1fr; }
+            .guide { grid-template-columns: 1fr; }
+            .hero-buttons { flex-direction: column; max-width: 250px; margin: 30px auto 0; }
+            #map { height: 450px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="nav">
+            <div class="brand">DHARAN<span>EXPLORER</span></div>
+            <div class="nav-links">
+                <a href="#map-section">MAP</a>
+                <a href="#places">PLACES</a>
+                <a href="#food">FOOD</a>
+                <a href="#cafes">CAFES</a>
+                <a href="#trips">DAY TRIPS</a>
+                <a href="#guide">GUIDE</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="location-badge">📍 DHARAN • KOSHI PROVINCE • NEPAL</div>
+        <h1>Welcome to<br><span>Dharan.</span></h1>
+        <p>A practical guide to exploring the city — from Vijayapur's historic temples and local food to viewpoints, green trails, cafes, and day trips into the hills.</p>
+        <div class="hero-buttons">
+            <a href="#map-section" class="btn btn-primary">Explore the map →</a>
+            <a href="#guide" class="btn btn-secondary">I'm visiting for the first time</a>
+        </div>
+    </section>
+
+    <!-- QUICK NAV -->
+    <div class="quick-nav">
+        <a class="quick-card" href="#places">
+            <div>🗺️</div>
+            <strong>Places</strong>
+            <small>Where to go</small>
+        </a>
+        <a class="quick-card" href="#food">
+            <div>🍜</div>
+            <strong>Food</strong>
+            <small>What to try</small>
+        </a>
+        <a class="quick-card" href="#trips">
+            <div>🏔️</div>
+            <strong>Day Trips</strong>
+            <small>Beyond Dharan</small>
+        </a>
+        <a class="quick-card" href="#guide">
+            <div>🎒</div>
+            <strong>First Visit</strong>
+            <small>Start here</small>
+        </a>
+    </div>
+
+    <!-- MAP SECTION -->
+    <section class="section" id="map-section">
+        <div class="heading">
+            <small>EXPLORE THE CITY</small>
+            <h2>Find your next stop.</h2>
+            <p>Tap a marker to learn what is there and get direct map routes.</p>
+        </div>
+        <div id="map"></div>
+    </section>
+
+    <!-- PLACES -->
+    <section class="section" id="places">
+        <div class="heading">
+            <small>PLACES WORTH YOUR TIME</small>
+            <h2>Start with these.</h2>
+            <p>A mix of heritage, culture, viewpoints, and nature.</p>
+        </div>
+
+        <div class="places">
+
+            <article class="place">
+                <div class="place-icon">🛕</div>
+                <div class="place-type">HERITAGE</div>
+                <h3>Budha Subba Temple</h3>
+                <p>One of Dharan's best-known religious and cultural landmarks, located in the historic Vijayapur area.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Budha+Subba+Temple+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="place">
+                <div class="place-icon">🔱</div>
+                <div class="place-type">HERITAGE</div>
+                <h3>Dantakali Temple</h3>
+                <p>A major pilgrimage site on Vijayapur Hill. Nepal Tourism Board includes it among Dharan's important pilgrimage attractions.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Dantakali+Temple+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="place">
+                <div class="place-icon">🕉️</div>
+                <div class="place-type">HERITAGE</div>
+                <h3>Pindeshwar Temple</h3>
+                <p>A historic temple close to Dharan Bazaar, known especially for its religious importance during the month of Shrawan.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Pindeshwar+Temple+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="place">
+                <div class="place-icon">🌿</div>
+                <div class="place-type">NATURE</div>
+                <h3>Panchakanya Temple</h3>
+                <p>A peaceful temple and green area on Vijayapur Hill. Good for a slower walk away from the busy centre.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Panchakanya+Temple+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="place">
+                <div class="place-icon">🌊</div>
+                <div class="place-type">NATURE</div>
+                <h3>Shiva Jatta</h3>
+                <p>A waterfall and nearby temple area north of the city. A good option when you want greenery rather than another urban stop.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Shiva+Jatta+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="place">
+                <div class="place-icon">🕰️</div>
+                <div class="place-type">CITY LANDMARK</div>
+                <h3>Dharan Clock Tower</h3>
+                <p>Right around the Bhanu Chowk area, this is an easy landmark to use when getting your bearings in central Dharan.</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Dharan+Clock+Tower" target="_blank">Open in Maps →</a>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- FOOD SECTION -->
+    <section class="section" id="food">
+        <div class="heading">
+            <small>EAT LIKE A LOCAL</small>
+            <h2>Come hungry.</h2>
+            <p>Click any dish below to see top recommended places to eat it in Dharan.</p>
+        </div>
+
+        <div class="food-grid">
+
+            <article class="food" onclick="showFoodSpots('sekuwa')">
+                <h3>🔥 Sekuwa</h3>
+                <p>Charcoal-grilled meat is one of Dharan's signature food experiences. Bagarkot is particularly associated with Dharane-style sekuwa and Rai/Limbu food culture.</p>
+                <span class="food-tag">SEE WHERE TO EAT →</span>
+            </article>
+
+            <article class="food" onclick="showFoodSpots('momo')">
+                <h3>🥟 Mo:Mo</h3>
+                <p>From simple local shops to busy evening food spots, momo is an easy first choice. Try a small plate before committing to a huge food crawl.</p>
+                <span class="food-tag">SEE WHERE TO EAT →</span>
+            </article>
+
+            <article class="food" onclick="showFoodSpots('pork')">
+                <h3>🥩 Local Pork Dishes</h3>
+                <p>Dharan has a strong reputation for pork dishes and local Rai/Limbu-influenced flavours. Ask what the house specialty is instead of ordering blindly.</p>
+                <span class="food-tag">SEE WHERE TO EAT →</span>
+            </article>
+
+            <article class="food" onclick="showFoodSpots('snacks')">
+                <h3>🌶️ Aalu Nimki & Street Snacks</h3>
+                <p>If you are exploring in the evening, leave room for smaller snacks. Street food is part of the fun — especially around busy market areas like Bhanu Chowk.</p>
+                <span class="food-tag">SEE WHERE TO EAT →</span>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- FOOD RECOMMENDATION MODAL -->
+    <div id="food-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeFoodModal()">&times;</span>
+            <h2 id="modal-food-title">Top Places to Eat</h2>
+            <div id="modal-food-list"></div>
+        </div>
+    </div>
+
+    <!-- CAFES -->
+    <section class="section" id="cafes">
+        <div class="heading">
+            <small>PLACES TO SIT & CHILL</small>
+            <h2>Need a coffee break?</h2>
+            <p>A few current local listings worth checking out around town.</p>
+        </div>
+
+        <div class="business-grid">
+
+            <article class="business">
+                <h3>The Dharan Cafe and Restro</h3>
+                <p>Sampang Chowk area. Great environment to grab a drink or light meal.</p>
+                <div class="hours">Listed hours: 08:00–22:00</div>
+                <a href="https://www.google.com/maps/search/?api=1&query=The+Dharan+Cafe+and+Restro" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="business">
+                <h3>D Cafeteria</h3>
+                <p>Durga Chowk / Laxmi Marg area. A popular hangout for coffee and quick snacks.</p>
+                <div class="hours">Listed hours: 07:00–21:00</div>
+                <a href="https://www.google.com/maps/search/?api=1&query=D+Cafeteria+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- DAY TRIPS -->
+    <section class="section" id="trips">
+        <div class="heading">
+            <small>DAY TRIPS</small>
+            <h2>Beyond Dharan.</h2>
+            <p>Popular nearby hill stations and scenic getaways accessible within a short ride.</p>
+        </div>
+
+        <div class="itinerary">
+
+            <article class="trip">
+                <div class="trip-label">HILL STATION</div>
+                <h3>Bhedetar & Charles Tower</h3>
+                <p>Located ~16 km uphill along the Koshi Highway. Known for cool weather, mist, and panoramic valley views.</p>
+                <ul>
+                    <li>Viewpoint Tower</li>
+                    <li>Cool Climate Break</li>
+                    <li>Local Food Stalls</li>
+                </ul>
+                <a href="https://www.google.com/maps/search/?api=1&query=Bhedetar+Charles+Tower" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="trip">
+                <div class="trip-label">WATERFALL</div>
+                <h3>Namaste Waterfalls</h3>
+                <p>A scenic cascading waterfall located en route to Bhedetar. Perfect for photography and short nature walks.</p>
+                <ul>
+                    <li>80-meter Drop</li>
+                    <li>Shaded Canyon Trail</li>
+                    <li>Photo Spots</li>
+                </ul>
+                <a href="https://www.google.com/maps/search/?api=1&query=Namaste+Waterfall+Bhedetar" target="_blank">Open in Maps →</a>
+            </article>
+
+            <article class="trip">
+                <div class="trip-label">PANORAMA</div>
+                <h3>Namo Buddha / Vijayapur Ridge</h3>
+                <p>The ridge line surrounding Vijayapur offers sunset views looking across the Terai plain and surrounding hills.</p>
+                <ul>
+                    <li>Scenic Sunset Views</li>
+                    <li>Temple Walk Route</li>
+                    <li>Peaceful Atmosphere</li>
+                </ul>
+                <a href="https://www.google.com/maps/search/?api=1&query=Vijayapur+Hill+Dharan" target="_blank">Open in Maps →</a>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- FIRST VISIT GUIDE -->
+    <section class="section" id="guide">
+        <div class="heading">
+            <small>FIRST VISIT GUIDE</small>
+            <h2>Start here.</h2>
+            <p>Practical tips to make your first trip to Dharan effortless.</p>
+        </div>
+
+        <div class="guide">
+
+            <article class="guide-card">
+                <h3>🚗 Getting Around</h3>
+                <p><strong>Auto Rickshaws (Tuk-tuks)</strong> and local Safa Tempos are the primary way to move inside town. Always agree on the fare before hopping in if non-metered, or use local ride apps if available.</p>
+            </article>
+
+            <article class="guide-card">
+                <h3>☀️ Best Time to Explore</h3>
+                <p>Head to the <strong>Vijayapur Hill temples</strong> in the cooler morning hours. Save the late afternoon for <strong>Bhanu Chowk market walks</strong> and evening <strong>sekuwa in Bagarkot</strong>.</p>
+            </article>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>Crafted for explorers visiting <strong>Dharan, Nepal</strong>.</p>
+    </footer>
+
+    <!-- Leaflet JS (Corrected Loading Order) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Map centered at Dharan Clock Tower
+            const map = L.map('map').setView([26.8124, 87.2834], 13);
+
+            // OpenStreetMap Standard Layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Location marker dataset
+            const locations = [
+                {
+                    name: "Budha Subba Temple",
+                    type: "Heritage",
+                    coords: [26.8286, 87.2941],
+                    desc: "Famous historical shrine in Vijayapur.",
+                    query: "Budha+Subba+Temple+Dharan"
+                },
+                {
+                    name: "Dantakali Temple",
+                    type: "Heritage",
+                    coords: [26.8256, 87.2921],
+                    desc: "Major pilgrimage site on Vijayapur Hill.",
+                    query: "Dantakali+Temple+Dharan"
+                },
+                {
+                    name: "Pindeshwar Temple",
+                    type: "Heritage",
+                    coords: [26.8185, 87.2845],
+                    desc: "Historic temple near Dharan Bazaar.",
+                    query: "Pindeshwar+Temple+Dharan"
+                },
+                {
+                    name: "Panchakanya Temple",
+                    type: "Nature / Heritage",
+                    coords: [26.8230, 87.2910],
+                    desc: "Peaceful temple and green walk area.",
+                    query: "Panchakanya+Temple+Dharan"
+                },
+                {
+                    name: "Shiva Jatta",
+                    type: "Nature",
+                    coords: [26.8450, 87.2880],
+                    desc: "Waterfall and temple area north of town.",
+                    query: "Shiva+Jatta+Dharan"
+                },
+                {
+                    name: "Dharan Clock Tower",
+                    type: "City Landmark",
+                    coords: [26.8124, 87.2834],
+                    desc: "Central hub in Bhanu Chowk.",
+                    query: "Dharan+Clock+Tower"
+                },
+                {
+                    name: "Bagarkot (Sekuwa Hub)",
+                    type: "Food Spot",
+                    coords: [26.8160, 87.2880],
+                    desc: "Dharan's famous evening sekuwa and Rai/Limbu food street.",
+                    query: "Bagarkot+Dharan"
+                },
+                {
+                    name: "The Dharan Cafe and Restro",
+                    type: "Cafe",
+                    coords: [26.8105, 87.2810],
+                    desc: "Popular local cafe at Sampang Chowk.",
+                    query: "The+Dharan+Cafe+and+Restro"
+                },
+                {
+                    name: "D Cafeteria",
+                    type: "Cafe",
+                    coords: [26.8090, 87.2850],
+                    desc: "Coffee & snack spot at Durga Chowk.",
+                    query: "D+Cafeteria+Dharan"
+                },
+                {
+                    name: "Bhedetar Viewpoint",
+                    type: "Day Trip",
+                    coords: [26.8700, 87.3150],
+                    desc: "Scenic hill station with Charles Tower view.",
+                    query: "Bhedetar+Charles+Tower"
+                },
+                {
+                    name: "Namaste Waterfalls",
+                    type: "Day Trip",
+                    coords: [26.8920, 87.3310],
+                    desc: "Cascading 80m waterfall along the highway.",
+                    query: "Namaste+Waterfall+Bhedetar"
+                }
+            ];
+
+            // Render Map Markers
+            locations.forEach(loc => {
+                const popupContent = `
+                    <div class="popup-title">${loc.name}</div>
+                    <div class="popup-type">${loc.type}</div>
+                    <div class="popup-text">${loc.desc}</div>
+                    <a class="map-button" href="https://www.google.com/maps/search/?api=1&query=${loc.query}" target="_blank">Navigate →</a>
+                `;
+                L.marker(loc.coords).addTo(map).bindPopup(popupContent);
+            });
+        });
+
+        // Food recommendation database
+        const foodSpotData = {
+            sekuwa: {
+                title: "🔥 Best Places for Dharane Sekuwa",
+                spots: [
+                    {
+                        name: "Bagarkot Sekuwa Hub",
+                        desc: "The core culinary street in Dharan famous for authentic Rai/Limbu-style charcoal-grilled sekuwa.",
+                        mapQuery: "Bagarkot+Dharan"
+                    },
+                    {
+                        name: "Lingbari Dharan",
+                        desc: "Popular local spot offering outdoor dining with high-rated pork and chicken sekuwa.",
+                        mapQuery: "Lingbari+Dharan"
+                    }
+                ]
+            },
+            momo: {
+                title: "🥟 Best Places for Mo:Mo",
+                spots: [
+                    {
+                        name: "Thamel Momo",
+                        desc: "Famous central spot known for juicy buff, chicken, and pork momos.",
+                        mapQuery: "Thamel+Momo+Dharan"
+                    },
+                    {
+                        name: "Sasto Momo House",
+                        desc: "Well-loved eatery serving traditional steamed and jhol momos.",
+                        mapQuery: "Sasto+Momo+House+Dharan"
+                    }
+                ]
+            },
+            pork: {
+                title: "🥩 Best Places for Local Pork Dishes",
+                spots: [
+                    {
+                        name: "Bagarkot Local Eateries",
+                        desc: "Top destination for traditional pork delicacies including Sekuwa, Sargemba, and Pork Sukuti.",
+                        mapQuery: "Bagarkot+Dharan"
+                    },
+                    {
+                        name: "Nisane View Point & Restaurant",
+                        desc: "Renowned locally for authentic pork thukpa and indigenous local preparations.",
+                        mapQuery: "Nisane+View+Point+Dharan"
+                    }
+                ]
+            },
+            snacks: {
+                title: "🌶️ Best Street Food & Snack Spots",
+                spots: [
+                    {
+                        name: "Bhanu Chowk Market",
+                        desc: "The bustling city center with dozens of evening street food stalls offering Aalu Nimki and fried bites.",
+                        mapQuery: "Bhanu+Chowk+Dharan"
+                    },
+                    {
+                        name: "Deshi Line",
+                        desc: "Historic local food street packed with sweet shops, quick fast-food corners, and evening snacks.",
+                        mapQuery: "Deshi+Line+Dharan"
+                    }
+                ]
+            }
+        };
+
+        // Modal triggers
+        function showFoodSpots(category) {
+            const data = foodSpotData[category];
+            if (!data) return;
+
+            document.getElementById('modal-food-title').innerText = data.title;
+            const listContainer = document.getElementById('modal-food-list');
+            listContainer.innerHTML = '';
+
+            data.spots.forEach(spot => {
+                const itemHTML = `
+                    <div class="spot-item">
+                        <h4>${spot.name}</h4>
+                        <p>${spot.desc}</p>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${spot.mapQuery}" target="_blank">Open Directions in Maps →</a>
+                    </div>
+                `;
+                listContainer.innerHTML += itemHTML;
+            });
+
+            document.getElementById('food-modal').style.display = 'block';
+        }
+
+        function closeFoodModal() {
+            document.getElementById('food-modal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('food-modal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>
